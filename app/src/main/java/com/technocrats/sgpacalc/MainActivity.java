@@ -13,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             Spinner spinner = new Spinner(this);
             spinner.setId(i);
             i++;
-            ArrayList arrayList = new ArrayList();
+            ArrayList<String> arrayList = new ArrayList<>();
             arrayList.add("Select Grade");
             arrayList.add("O");
             arrayList.add("E");
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             arrayList.add("F");
             arrayList.add("S");
             arrayList.add("M");
-            ArrayAdapter arrayAdapter = new ArrayAdapter(this, 17367048, arrayList);
+            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, 17367048, arrayList);
             arrayAdapter.setDropDownViewResource(17367049);
             spinner.setAdapter(arrayAdapter);
             gridLayout.addView(spinner, 2);
@@ -91,22 +93,63 @@ public class MainActivity extends AppCompatActivity {
         button.setTextColor(-16777216);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                MainActivity.this.show(view);
+                MainActivity.this.show(parseInt);
             }
         });
         button.setText("Calculate");
         gridLayout.addView(button, parseInt * 3);
-        Toast.makeText(this, "Subjected Added Successfully", 0).show();
+        Toast.makeText(this, "Subjects Added Successfully", Toast.LENGTH_SHORT).show();
     }
 
-    private void show(View view) {
+    private void show(int noOfSubjects) {
 
-        //Here you have to do sgpa calculation by getting value of editext and spinner
+        //for referencing grade points
+        Map<String, Integer> gradePoint = new HashMap<>();
+        gradePoint.put("Select Grade", -1);
+        gradePoint.put("O", 10);
+        gradePoint.put("E", 9);
+        gradePoint.put("A", 8);
+        gradePoint.put("B", 7);
+        gradePoint.put("C", 6);
+        gradePoint.put("D", 5);
+        gradePoint.put("F", 2);
+        gradePoint.put("M", 0);
+        gradePoint.put("S", 0);
+
+        int idForEditText = 0;
+        int idForSpinner = noOfSubjects + 1;
+        int totalCreditPoints = 0;
+        int obtainedCreditPoints = 0;
+        for (int i = 1; i <= noOfSubjects; i++) {
+
+            //get the credits edit text and check if empty
+            EditText creditsET = findViewById(idForEditText++);
+            if (creditsET.getText().toString().isEmpty()){
+                creditsET.setError("Please enter the credit");
+                creditsET.requestFocus();
+                return;
+            }
+            int credits = Integer.parseInt(creditsET.getText().toString());
+
+            //get the spinner for grade point
+            Spinner gradeSpinner = findViewById(idForSpinner++);
+            int point = gradePoint.get(gradeSpinner.getSelectedItem().toString());
+            //if nothing is selected
+            if (point == -1){
+                Toast.makeText(this, "Please enter the grade", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            totalCreditPoints += credits;
+            obtainedCreditPoints += credits*point;
+        }
+
+        float sgpa = ((float)obtainedCreditPoints)/totalCreditPoints;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle((CharSequence) "YOUR SGPA");
-        builder.setMessage((CharSequence) "this is the calculation showing part");
-        builder.setNegativeButton((CharSequence) "Got It !!", (DialogInterface.OnClickListener) null).setCancelable(false);
+        builder.setTitle("YOUR SGPA");
+        builder.setMessage("" + sgpa);
+        builder.setNegativeButton((CharSequence) "Got It !", (DialogInterface.OnClickListener) null).setCancelable(false);
         builder.create();
         builder.show();
 
